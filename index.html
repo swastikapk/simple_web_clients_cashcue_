@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Prediction</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <h1>Model Prediction</h1>
+
+    <h2>Model 1</h2>
+    <form id="prediction-form1">
+        <label for="saldo">Saldo:</label>
+        <input type="text" id="saldo" placeholder="Enter Saldo" required>
+        <label for="kredit">Kredit:</label>
+        <input type="text" id="kredit" placeholder="Enter Kredit" required>
+        <label for="sisa_saldo">Sisa Saldo:</label>
+        <input type="text" id="sisa_saldo" placeholder="Enter Sisa Saldo" readonly>
+        <button type="button" onclick="predictModel1()">Predict Model 1</button>
+        <div id="output1"></div>
+    </form>
+
+    <h2>Model 2</h2>
+    <form id="prediction-form2">
+        <input type="file" id="image-input" accept="image/*">
+        <button type="button" onclick="predictModel2()">Predict Model 2</button>
+        <div id="output2"></div>
+    </form>
+
+    <script>
+        // Function to update Sisa Saldo
+        function updateSisaSaldo() {
+            const saldo = parseFloat(document.getElementById('saldo').value) || 0;
+            const kredit = parseFloat(document.getElementById('kredit').value) || 0;
+            const sisa_saldo = saldo - kredit;
+            document.getElementById('sisa_saldo').value = sisa_saldo.toFixed(2);
+        }
+
+        // Event listeners for saldo and kredit inputs to update Sisa Saldo
+        document.getElementById('saldo').addEventListener('input', updateSisaSaldo);
+        document.getElementById('kredit').addEventListener('input', updateSisaSaldo);
+
+        async function predictModel1() {
+            const saldo = parseFloat(document.getElementById('saldo').value);
+            const kredit = parseFloat(document.getElementById('kredit').value);
+            const sisa_saldo = parseFloat(document.getElementById('sisa_saldo').value);
+
+            const response = await fetch('http://127.0.0.1:5000/predict_model1', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    Saldo: saldo,
+                    Kredit: kredit,
+                    Sisa_Saldo: sisa_saldo
+                })
+            });
+            const result = await response.json();
+            document.getElementById('output1').innerText = JSON.stringify(result.prediction, null, 2);
+        }
+
+        async function predictModel2() {
+            const imageInput = document.getElementById('image-input').files[0];
+            const formData = new FormData();
+            formData.append('file', imageInput);
+
+            const response = await fetch('http://127.0.0.1:5000/predict_model2', {
+                method: 'POST',
+                body: formData
+            });
+            const result = await response.json();
+            document.getElementById('output2').innerText = JSON.stringify(result.prediction, null, 2);
+        }
+    </script>
+</body>
+
+</html>
